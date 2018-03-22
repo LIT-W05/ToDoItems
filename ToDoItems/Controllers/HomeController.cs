@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Web;
 using System.Web.Mvc;
+using ToDoItems.Models;
 
 namespace ToDoItems.Controllers
 {
@@ -10,21 +11,66 @@ namespace ToDoItems.Controllers
     {
         public ActionResult Index()
         {
+            ToDoItemsManager mgr = new ToDoItemsManager(Properties.Settings.Default.ConStr);
+
+            IEnumerable<ToDoItem> items = mgr.GetIncompletedItems();
+            return View(items);
+        }
+
+        public ActionResult Categories()
+        {
+            ToDoItemsManager mgr = new ToDoItemsManager(Properties.Settings.Default.ConStr);
+            return View(mgr.GetCategories());
+        }
+
+        public ActionResult NewCategory()
+        {
             return View();
         }
 
-        public ActionResult About()
+        [HttpPost]
+        public ActionResult SaveNewCategory(string name)
         {
-            ViewBag.Message = "Your application description page.";
-
-            return View();
+            ToDoItemsManager mgr = new ToDoItemsManager(Properties.Settings.Default.ConStr);
+            mgr.AddCategory(name);
+            return Redirect("/home/categories");
         }
 
-        public ActionResult Contact()
+        public ActionResult EditCategory(int id)
         {
-            ViewBag.Message = "Your contact page.";
+            ToDoItemsManager mgr = new ToDoItemsManager(Properties.Settings.Default.ConStr);
+            Category category = mgr.GetCategory(id);
+            return View(category);
+        }
 
-            return View();
+        [HttpPost]
+        public ActionResult UpdateCategory(Category category)
+        {
+            ToDoItemsManager mgr = new ToDoItemsManager(Properties.Settings.Default.ConStr);
+            mgr.UpdateCategory(category);
+            return Redirect("/home/categories");
+        }
+
+        public ActionResult NewItem()
+        {
+            ToDoItemsManager mgr = new ToDoItemsManager(Properties.Settings.Default.ConStr);
+            return View(mgr.GetCategories());
+        }
+
+        [HttpPost]
+        public ActionResult SaveNewItem(ToDoItem item)
+        {
+            ToDoItemsManager mgr = new ToDoItemsManager(Properties.Settings.Default.ConStr);
+            mgr.AddToDoItem(item);
+            return Redirect("/home/index");
+        }
+
+        [HttpPost]
+        public ActionResult MarkAsCompleted(int id)
+        {
+            ToDoItemsManager mgr = new ToDoItemsManager(Properties.Settings.Default.ConStr);
+            mgr.MarkAsCompleted(id);
+            return Redirect("/home/index");
         }
     }
 }
